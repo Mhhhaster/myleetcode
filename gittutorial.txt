@@ -1,0 +1,54 @@
+Git is a distributed version control system.
+Git is free software distributed under the GPL.
+Git has a mutable index called stage.
+Git tracks changes of files.
+
+git init初始化一个git仓库
+git add+文件名:对文件的修改添加到暂存区
+git commit -m “xxx”可以对多个添加的文件说明：暂存区提交到分支
+git push origin main 向远程库提交main分支的最新修改
+git pull将远程合并到本地
+git diff
+
+cat +文件名 查看文件内容
+git status 查看状态
+
+标签：
+git tag查看已有标签
+git tag -a 标签名 -m "说明文字" +commit_id(缺省则默认head)命名 
+git show <tagname>详情
+
+穿梭：
+git log 查看提交历史
+git reflog 查看命令历史
+HEAD栈顶指针
+git reset --hard +commit_id 版本穿梭
+
+撤销修改：
+未add——git restore readme.txt 丢弃工作区修改
+已add——git restore --staged readme.txt 丢弃暂存区+git checkout -- readme.txt
+
+删除：
+git rm/restore test.txt 删除操作提交到暂存区
+git commit -m "remove test.txt"
+
+git checkout -- test.txt  从版本库替换到工作区
+
+分支
+git branch 查看已有分支
+git branch dev 创建dev分支
+git switch dev 切换到dev分支
+git switch main  切换回主分支
+git merge dev dev分支修改合并到main
+git branch -d dev  合并完成后删除dev分支
+
+在分支上工作时：
+git stash 保存现场(git status 为clean状态)
+回到main+创建新分支+移动到新分支；add+commit；回到main+merge+删除新分支
+git stash list
+git stash apply或者git stash pop(清空stash)
+git cherry-pick <commit> 把bug提交的修改“复制”到当前分支
+
+工作区myrepo
+版本库.git内有stage(index)暂存区、自动创建的main分支及指向main的指针HEAD
+
