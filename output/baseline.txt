@@ -1,0 +1,18 @@
+STGCNN  250epoch
+Avg ADE: 0.46735137343138533
+Avg FDE: 0.7923417121053653
+
+STGAT  400epoch
+ADE  0.650 FDE  1.455
+
+social-gan   800epoch
+[INFO: train.py:  307]:   [train] ade: 4.805
+[INFO: train.py:  307]:   [train] ade_l: 9.943
+[INFO: train.py:  307]:   [train] ade_nl: 9.300
+[INFO: train.py:  307]:   [train] d_loss: 1.386
+[INFO: train.py:  307]:   [train] fde: 9.093
+[INFO: train.py:  307]:   [train] fde_l: 18.815
+[INFO: train.py:  307]:   [train] fde_nl: 17.599
+
+OUTPUT_DIR=models.densetnt.1; GPU_NUM=1; 
+python src/run.py --argoverse --future_frame_num 30   --do_train --data_dir ../argoverse-api/val --output_dir models.densetnt.1  --hidden_size 128 --train_batch_size 64 --use_map   --core_num 16 --use_centerline --distributed_training 1  --other_params     semantic_lane direction l1_loss     goals_2D enhance_global_graph subdivide lazy_points new laneGCN point_sub_graph     stage_one stage_one_dynamic=0.95 laneGCN-4 point_level-4-3 complete_traj complete_traj-3
