@@ -1,6 +1,6 @@
 python3 prerender/prerender.py \
     --data-path /home/linke3090/wwgwm/lyz/data/waymo/training \
-    --output-path /home/linke3090/wwgwm/lyz/data/waymoprerender \
+    --output-path /home/linke3090/wwgwm/lyz/data/prerender/training \
     --n-jobs 24 \
     --n-shards 1 \
     --shard-id 0 \
