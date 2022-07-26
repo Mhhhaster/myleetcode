@@ -1,73 +1,136 @@
 # Pytorch基础
 
-### tensor=可以利用gpu的numpy
+## tensor
 
-**创建：**
+可以利用gpu的numpy
 
-```
-全0：x=torch.empty(n,m)
+- ### tensor属性
 
-全0~1：x=torch.rand(n,m)
+  - dtype![img](https://api2.mubu.com/v3/document_image/6daadb0a-bffe-4af0-81d5-3f0f208ef1da-7811670.jpg)
 
-全1：x=torch.ones(n,m)
+  - device：cuda or cpu
 
-由已有转换：
-	指定每个元素: x=torch.tensor([list])
-	a=np.ones(5)
-	b=torch.from_numpy(a)
-```
+  - layout
 
-**计算：**
+- #### **tensor创建：**
 
-```python
-加法：x+y
-	torch.add(x,y)
-    y.add_(x)
-```
+  - 初始化
 
-**resize/reshape**：
+  ```python
+  x=torch.empty(n,m) #全0
+  
+  x=torch.rand(n,m) #全部在0~1范围
+  
+  x=torch.ones(n,m) # 全1
+  ```
 
-```python
-x=torch.randn(4,4)
-y=x.view(-1,8)  
-#y.size()=torch.size([2,8])
-```
+  - 由已有转换：
 
-**tensor转换**
+  ```python
+  #指定每个元素
+    x=torch.tensor([list])
+   #从numpy中获取数据
+  	a=np.ones(5)
+  	b=torch.from_numpy(a)
+  ```
 
-```
-#获取单元素tensor值
-x=torch.rand(1)
-print(x.item())   
+- #### **tensor操作：**
 
-#tensor转numpy
-b=a.numpy()
+  - **基本运算**
 
-注意：转换前后共享内存空间，a.add_(1)后，a为全2 tensor，b为全2 array
-```
+  ```python
+  加法：x+y
+  	torch.add(x,y)
+      y.add_(x)
+  减
+  乘
+  除
+  幂
+  指数
+  对数
+  三角函数
+  四舍五入
+  ```
 
-**y对x求导**
+  - **resize/reshape**
 
-```
-x=torch,xx(...,requires_grad=True)
-# 默认为false，设为True之后为x.grad额外放置一个空间
-y=f(x)
+  ```python
+  x=torch.randn(4,4)
+  y=x.view(-1,8)  
+  #y.size()=torch.size([2,8])
+  #y为x的视图，内存地址不变
+  ```
 
-y.backward()
+  - **降维操作**
 
-print(x.grad)
-```
+  ```python
+  torch.argmax(input, dim=None, keepdim=False) #返回最大值排序的索引值
+  torch.argmin(input, dim=None, keepdim=False)  #返回最小值排序的索引值
+  
+  torch.cumprod(input, dim, out=None)  #y_i=x_1 * x_2 * x_3 *…* x_i
+  torch.cumsum(input, dim, out=None)  #y_i=x_1 + x_2 + … + x_i
+  
+  torch.dist(input, out, p=2)       #返回input和out的p式距离
+  torch.mean()                      #返回平均值
+  torch.sum()                       #返回总和
+  torch.median(input)               #返回中间值
+  torch.mode(input)                 #返回众数值
+  torch.unique(input, sorted=False) #返回1-D的唯一的tensor,每个数值返回一次.
+  ```
 
-### CUDA
+  - **tensor导出**
 
-**gpu使用**
+  ```python
+  #获取单元素tensor值
+  x=torch.rand(1)
+  print(x.item())   
+  
+  #tensor转numpy
+  b=a.numpy()
+  
+  #注意：转换前后共享内存空间，a.add_(1)后，a为全2 tensor，b为全2 array
+  ```
 
-```
-if torch.cuda/is_available():
-	device=torch.device("cuda")
-	y=torch.ones_lie(x,device=device)
-	x=x.to(device)
-	# x、y都在GPU上，计算结果也会在GPU上
-```
+  - **y对x求导**
+
+  ```python
+  x=torch,xx(...,requires_grad=True)
+  # 默认为false，设为True之后为x.grad额外放置一个空间
+  y=f(x)
+  
+  y.backward()
+  
+  print(x.grad)
+  ```
+
+  - **Join：cat续接 & stack叠加 && gather**
+
+  ```python
+  a=torch.Tensor([1,2,3])
+  torch.stack((a,a)).size()
+  # torch.size(2,3)
+  torch.cat((a,a)).size()
+  # torch.size(6)
+  
+  torch.gather(input, dim, index)
+  '''
+  根据dim维度和索引，获取对应的值
+  https://zhuanlan.zhihu.com/p/352877584
+  '''
+  ```
+
+  - **split & chunk**
+
+  ```python
+  >>> a = torch.Tensor([1,2,3])
+  >>> torch.split(a,1)  # 每组大小为1
+  (tensor([1.]), tensor([2.]), tensor([3.]))
+  >>> torch.chunk(a,1)   #切分为1组
+  (tensor([ 1., 2., 3.]),)
+  ```
+
+## Autograd
+
+
 
 ![image-20220614171232536](https://raw.githubusercontent.com/Mhhhaster/for_picgo/main/202206141712733.png)

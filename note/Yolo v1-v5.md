@@ -28,6 +28,18 @@
 
 ​	**Fast R-CNN：**
 
+![img](https://pic2.zhimg.com/v2-1f0fab4f59a951f41b0dd134f7e98c99_b.jpg)
+
+![img](https://pic4.zhimg.com/v2-e64a99b38f411c337f538eb5f093bdf3_r.jpg)
+
+首先缩放至固定大小MxN，然后将MxN图像送入网络； 
+
+Conv layers中包含了13个conv层+13个relu层+4个pooling层； 
+
+RPN网络首先经过3x3卷积，再分别生成positive anchors和对应bounding box regression偏移量，然后计算出proposals； 
+
+Roi Pooling层则利用proposals从feature maps中提取**proposal feature**送入后续全连接和softmax网络作classification（即分类proposal到底是什么object）
+
 **One-stage：**
 
 ​	特点：直接回归物体的类别概率和位置坐标值，无RPN网络（region proposal），准确度低，快。
@@ -36,14 +48,14 @@
 
 #### 常见缩写
 
-#### 	**mAP**：
+**mAP**：
 
 ​		mAP：mean Average Precision，即各类别AP的平均值
 ​		AP：PR曲线下面积
 
-#### 	**FPS：**Frames Per Second，每秒处理帧数
+**FPS：**Frames Per Second，每秒处理帧数
 
-#### 	**NMS：非极大值抑制（Non-Maximum suppression）**
+**NMS：非极大值抑制（Non-Maximum suppression）**
 
 目标检测算法中一个必要的后处理过程，**目的是消除同一个物体上的冗余预测框。**
 
@@ -55,7 +67,7 @@
 
 ## 1. v1：
 
-**核心思想：**(将分类问题转化为回归问题)
+#### **核心思想：**(将分类问题转化为回归问题)
 
 1.将一幅图像划分为 S x S 个网格(grid cell)，如果某个物体的中心落在某网格内，则其预测任务由该网格负责
 
@@ -67,7 +79,7 @@
 
 <img src="https://raw.githubusercontent.com/Mhhhaster/for_picgo/main/202206131009882.png" alt="image-20220613100858716" style="zoom:50%;" />
 
-**损失函数：**
+#### **损失函数：**
 
 ![image-20220613111255727](https://raw.githubusercontent.com/Mhhhaster/for_picgo/main/202206131112825.png)
 
@@ -85,7 +97,7 @@
 
 **特点：**能检测超过9000个类别
 
-**backbone：**Darknet-19(19个卷积层)
+#### **backbone：Darknet-19(19个卷积层)**
 
 <img src="https://raw.githubusercontent.com/Mhhhaster/for_picgo/main/202206131449586.png" alt="image-20220613144924499" style="zoom:50%;" />
 
@@ -125,9 +137,7 @@
 
 ## v3：
 
-**特点：**
-
-**backbone：**darknet-53（用卷积层替换pooling层的resnet）
+#### **backbone：**darknet-53（用卷积层替换pooling层的resnet）
 
 <img src="https://raw.githubusercontent.com/Mhhhaster/for_picgo/main/202206132001507.png" alt="image-20220613200119430" style="zoom:50%;" />
 
@@ -161,11 +171,9 @@ N x N x[3*(4+1+80)]:
 
 **损失计算：**置信度损失+分类损失+定位损失
 
-
-
-定位损失
-
 ## SPP：
+
+#### 改进
 
 **mosaic图像增强：**随机选取四张图像进行组合
 
@@ -191,3 +199,96 @@ stride都为1，需要填充，且卷积前后尺寸不变，concat后实现不�
 
 **Focal Loss** todo
 
+## v4：
+
+#### **backbone：CSPDarknet-53**
+
+改进：
+
+**CSPnet：**增强CNN的学习能力，并且减少对显存的使用
+
+**SPP结构：**解决多尺度问题
+
+**PAN：**path aggregation network
+
+**eliminate gird sensitive：**
+
+每个grid都需要针对每个anchor（此处为三）**回归参数**以及每个类别的分数。
+
+bx=sigmoid(tx)+cx
+
+by=sigmoid(ty)+cy
+
+bw=pwe^tw
+
+bh=phe^th
+
+如果中心点位于边界，那么sigmoid的输出需要接近0（很难），因此
+
+不妨令bx=2 sigmoid(tx)-0.5+cx，那么就很容易取到0
+
+**mosaic data augumentation**
+
+IoU threshold（正样本匹配）
+
+将GT与每个anchor模板计算IoU，大于阈值则作为正样本。
+
+（对于一个GT，还要看他的中心点落在哪个cell，如果前俩个anchor模板与GT的IoU大于阈值，则将该cell的AT1，AT2为正样本。而原始v3中，只能分配给一个anchor）
+
+Todo：扩展部分重听
+
+**优化anchor模板**
+
+目标类型有小尺度、中尺度和大尺度，每个类型根据聚类得到了三种anchor模板，v4和v3，v5不同
+
+**CIoU**
+
+## V5
+
+#### 网络结构部分：
+
+1. 
+
+2. SPP—>SPPF：完全等价，SPPF更快（串行通过一个3*3和一个5 *5 等效于通过一个8 *8）
+
+#### 数据增强：
+
+mosaic：四张图拼成一张图
+
+copy paste：将目标抠下来（数据必须要已经完成实例分割），粘贴到别的图片中
+
+random affine(仿射变换)：缩放、平移、旋转、shear错切？
+
+mixup：将两张图片按一定透明程度混合成一张
+
+Albumentations：滤波、直方图均衡化以及改变图片质量
+
+augment HSV：hue色度、saturation饱和度、value明度（SPP）
+
+random horizantal flip：按一定比例随机将图片水平翻转（照镜子）
+
+#### **训练策略**：
+
+multi-scale training多尺度训练：输入图片640*640，实际输出：0.5x～1.5x
+
+autoanchor：重新聚类生成新的anchor
+
+warmup+cosine LR scheduler：初期将学习率从很小升高到初始学习率，再以cos下降
+
+EMA(Exponential moving average):给学习变量加上一个动量
+
+mixed precision：减少对GPU利用，加速训练（需要GPU支持混合精度方法）
+
+evolve hyper-parameters：炼丹方法
+
+#### **损失计算**
+
+分类classes损失：仍采用BCE二值交叉熵损失，只计算正样本分类损失
+
+obj损失：同样BCE loss，指网络预测目标边界框与GT box的CIoU，计算所有样本的obj损失（v3，v4如果有目标为1，无目标为0）
+
+location定位损失：采用CIoU loss，只计算正样本定位损失
+
+平衡不同尺度损失：小目标难以预测，因此计算obj损失时权重更大
+
+消除grid 敏感度：
